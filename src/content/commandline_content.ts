@@ -22,6 +22,13 @@ let cmdline_iframe: HTMLIFrameElement
 let iframeReady: Promise<void>
 let resolveIframeReady: () => void
 let iframeGeneration = ""
+function resizeIframe() {
+    if (cmdline_iframe.inert) return
+    const height =
+        cmdline_iframe.contentWindow.document.body.offsetHeight + "px"
+    cmdline_iframe.setAttribute("style", `height: ${height} !important;`)
+}
+const resizeObserver = new ResizeObserver(resizeIframe)
 export function makeIframe() {
     resolveIframeReady?.()
     iframeGeneration = Math.random().toString()
@@ -140,9 +147,8 @@ export async function show(hidehover = false, deadline = Date.now() + 5000) {
 
         cmdline_iframe.inert = false;
         cmdline_iframe.classList.remove("hidden")
-        const height =
-            cmdline_iframe.contentWindow.document.body.offsetHeight + "px"
-        cmdline_iframe.setAttribute("style", `height: ${height} !important;`)
+        resizeIframe()
+        resizeObserver.observe(cmdline_iframe.contentWindow.document.body)
         return true
     } catch (e) {
         // Note: We can't use cmdline_logger.error because it will try to log
@@ -155,6 +161,7 @@ export async function show(hidehover = false, deadline = Date.now() + 5000) {
 export function hide() {
     try {
         cmdline_iframe.inert = true;
+        resizeObserver.disconnect()
         cmdline_iframe.classList.add("hidden")
         cmdline_iframe.setAttribute("style", "height: 0px !important;")
     } catch (e) {
