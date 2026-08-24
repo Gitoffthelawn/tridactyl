@@ -198,7 +198,7 @@ Codename "Carpenter"
     - beta builds now use the next release's version number rather than claiming to be pre-releases of the previous version
     - `HistoryState` autocmds now trigger reliably on same-document navigation ([#4329](https://github.com/tridactyl/tridactyl/issues/4329))
     - `:q` can no longer report “Message manager disconnected” when closing tabs ([#1528](https://github.com/tridactyl/tridactyl/issues/1528))
-    - `:set newtab about:blank` no longer shows `New Tab` as the tab title ([#5021](https://github.com/tridactyl/tridactyl/issues/5021))
+    - `:set newtab about:blank` now shows `&centerdot;` rather than `New Tab` as the tab title ([#5021](https://github.com/tridactyl/tridactyl/issues/5021))
     - macOS Firefox profile detection now finds profiles three directories deep ([#1627](https://github.com/tridactyl/tridactyl/issues/1627))
     - Missing `tridactylrc` errors now point to `:help source` and include native error details ([#4088](https://github.com/tridactyl/tridactyl/issues/4088))
     - `xclip` processes now exit after setting the clipboard ([#4822](https://github.com/tridactyl/tridactyl/issues/4822))
