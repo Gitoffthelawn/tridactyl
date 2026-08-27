@@ -32,11 +32,11 @@ function convertMetadata(project) {
             .map(part => part.text || "")
             .join("")
             .replace(/\n+$/, "")
-    // Extract @arg tags: `@arg -flag description` -> flags["-flag"] = "description"
+    // Extract @flag tags: `@flag -flag description` -> flags["-flag"] = "description"
     const argFlags = comment => {
         const flags = {}
         for (const tag of comment?.blockTags || []) {
-            if (tag.tag !== "@arg") continue
+            if (tag.tag !== "@flag") continue
             const text = (tag.content || []).map(part => part.text || "").join("")
             const m = /^(-\S+)\s+(.+)$/.exec(text.trim())
             if (m) flags[m[1]] = m[2]

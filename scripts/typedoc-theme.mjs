@@ -252,21 +252,21 @@ class TridactylRouter extends KindRouter {
     }
 }
 
-function parseArgTag(tag) {
+function parseFlagTag(tag) {
     const text = (tag.content || []).map(part => part.text || "").join("")
     const m = /^(-\S+)\s+(.+)$/.exec(text.trim())
     return m ? [m[1], m[2]] : undefined
 }
 
-function renderArgList(anchor, parsed) {
+function renderFlagList(anchor, parsed) {
     if (parsed.length === 0) return null
     return h(
         "div",
-        { class: "tsd-tag-arg tsd-comment tsd-typography" },
+        { class: "tsd-tag-flag tsd-comment tsd-typography" },
         h(
             "h4",
             { class: "tsd-anchor-link", id: anchor },
-            "Arguments",
+            "Flags",
             h(
                 "a",
                 { href: `#${anchor}`, "aria-label": "Permalink", class: "tsd-anchor-icon" },
@@ -285,7 +285,7 @@ function renderArgList(anchor, parsed) {
     )
 }
 
-const ARG_MARKER = "{{tridactyl-arg-list}}"
+const FLAG_MARKER = "{{tridactyl-flag-list}}"
 
 class TridactylTheme extends DefaultTheme {
     getRenderContext(page) {
@@ -293,22 +293,22 @@ class TridactylTheme extends DefaultTheme {
         const defaultCommentSummary = context.commentSummary
         context.commentSummary = props => {
             const owner = props.isParameter?.() ? props.parent : props
-            const argTags = (owner?.comment?.blockTags || []).filter(
-                tag => tag.tag === "@arg",
+            const flagTags = (owner?.comment?.blockTags || []).filter(
+                tag => tag.tag === "@flag",
             )
             const summaryParts = props.comment?.summary || []
             const markerIndex = summaryParts.findIndex(
-                part => part.kind === "text" && part.text.includes(ARG_MARKER),
+                part => part.kind === "text" && part.text.includes(FLAG_MARKER),
             )
-            if (argTags.length === 0 || markerIndex === -1)
+            if (flagTags.length === 0 || markerIndex === -1)
                 return defaultCommentSummary(props)
 
-            argTags.forEach(tag => (tag.skipRendering = true))
-            const parsed = argTags.map(parseArgTag).filter(Boolean)
-            const anchor = `${String(owner.name || "arguments").toLowerCase()}-arguments`
+            flagTags.forEach(tag => (tag.skipRendering = true))
+            const parsed = flagTags.map(parseFlagTag).filter(Boolean)
+            const anchor = `${String(owner.name || "flags").toLowerCase()}-flags`
 
             const markerPart = summaryParts[markerIndex]
-            const [beforeText, afterText] = markerPart.text.split(ARG_MARKER)
+            const [beforeText, afterText] = markerPart.text.split(FLAG_MARKER)
             const before = [
                 ...summaryParts.slice(0, markerIndex),
                 ...(beforeText ? [{ kind: "text", text: beforeText }] : []),
@@ -321,7 +321,7 @@ class TridactylTheme extends DefaultTheme {
                 JSX.Fragment,
                 null,
                 before.length > 0 && context.displayParts(before),
-                renderArgList(anchor, parsed),
+                renderFlagList(anchor, parsed),
                 after.length > 0 && context.displayParts(after),
             )
         }
