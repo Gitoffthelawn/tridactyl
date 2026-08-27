@@ -32,6 +32,17 @@ function convertMetadata(project) {
             .map(part => part.text || "")
             .join("")
             .replace(/\n+$/, "")
+    // Extract @arg tags: `@arg -flag description` -> flags["-flag"] = "description"
+    const argFlags = comment => {
+        const flags = {}
+        for (const tag of comment?.blockTags || []) {
+            if (tag.tag !== "@arg") continue
+            const text = (tag.content || []).map(part => part.text || "").join("")
+            const m = /^(-\S+)\s+(.+)$/.exec(text.trim())
+            if (m) flags[m[1]] = m[2]
+        }
+        return flags
+    }
 
     const normalizeParameter = (parameter, resolving) => ({
         name: parameter.name,
@@ -152,15 +163,16 @@ function convertMetadata(project) {
             .filter(node => node.kind === KIND.Function)
             .map(node => {
                 const signature = node.signatures?.[0]
+                const comment = signature?.comment || node.comment
+                const flags = argFlags(comment)
                 return [
                     node.name,
                     {
-                        doc:
-                            commentText(signature?.comment) ||
-                            commentText(node.comment),
+                        doc: commentText(comment),
                         params: (signature?.parameters || []).map(parameter =>
                             normalizeParameter(parameter),
                         ),
+                        ...(Object.keys(flags).length ? { flags } : {}),
                     },
                 ]
             }),

@@ -252,7 +252,82 @@ class TridactylRouter extends KindRouter {
     }
 }
 
+function parseArgTag(tag) {
+    const text = (tag.content || []).map(part => part.text || "").join("")
+    const m = /^(-\S+)\s+(.+)$/.exec(text.trim())
+    return m ? [m[1], m[2]] : undefined
+}
+
+function renderArgList(anchor, parsed) {
+    if (parsed.length === 0) return null
+    return h(
+        "div",
+        { class: "tsd-tag-arg tsd-comment tsd-typography" },
+        h(
+            "h4",
+            { class: "tsd-anchor-link", id: anchor },
+            "Arguments",
+            h(
+                "a",
+                { href: `#${anchor}`, "aria-label": "Permalink", class: "tsd-anchor-icon" },
+                h(
+                    "svg",
+                    { viewBox: "0 0 24 24", "aria-hidden": "true" },
+                    h("use", { href: "../assets/icons.svg#icon-anchor" }),
+                ),
+            ),
+        ),
+        h(
+            "ul",
+            null,
+            parsed.map(([flag, desc]) => h("li", null, h("code", null, flag), " ", desc)),
+        ),
+    )
+}
+
+const ARG_MARKER = "{{tridactyl-arg-list}}"
+
 class TridactylTheme extends DefaultTheme {
+    getRenderContext(page) {
+        const context = super.getRenderContext(page)
+        const defaultCommentSummary = context.commentSummary
+        context.commentSummary = props => {
+            const owner = props.isParameter?.() ? props.parent : props
+            const argTags = (owner?.comment?.blockTags || []).filter(
+                tag => tag.tag === "@arg",
+            )
+            const summaryParts = props.comment?.summary || []
+            const markerIndex = summaryParts.findIndex(
+                part => part.kind === "text" && part.text.includes(ARG_MARKER),
+            )
+            if (argTags.length === 0 || markerIndex === -1)
+                return defaultCommentSummary(props)
+
+            argTags.forEach(tag => (tag.skipRendering = true))
+            const parsed = argTags.map(parseArgTag).filter(Boolean)
+            const anchor = `${String(owner.name || "arguments").toLowerCase()}-arguments`
+
+            const markerPart = summaryParts[markerIndex]
+            const [beforeText, afterText] = markerPart.text.split(ARG_MARKER)
+            const before = [
+                ...summaryParts.slice(0, markerIndex),
+                ...(beforeText ? [{ kind: "text", text: beforeText }] : []),
+            ]
+            const after = [
+                ...(afterText ? [{ kind: "text", text: afterText }] : []),
+                ...summaryParts.slice(markerIndex + 1),
+            ]
+            return h(
+                JSX.Fragment,
+                null,
+                before.length > 0 && context.displayParts(before),
+                renderArgList(anchor, parsed),
+                after.length > 0 && context.displayParts(after),
+            )
+        }
+        return context
+    }
+
     getReflectionClasses(reflection) {
         const kind = ReflectionKind.classString(reflection.kind)
         const parent =

@@ -5532,26 +5532,8 @@ const KILL_STACK: Element[] = []
  *
  * Hinting action flags (only one can be specified):
  *
- * - -t open in a new foreground tab
- * - -b open in background
- * - -y copy (yank) link's target to clipboard
- * - -p copy an element's text to the clipboard
- * - -h select an element (as if you click-n-dragged over it)
- * - -P copy an element's title/alt text to the clipboard
- * - -r read an element's text with text-to-speech
- * - -i view an image
- * - -I view an image in a new tab
- * - -k irreversibly deletes an element from the page (until reload)
- * - -K hides an element on the page; hidden elements can be restored using [[elementunhide]].
- * - -s save (download) the linked resource
- * - -S save the linked image
- * - -a save-as the linked resource
- * - -A save-as the linked image
- * - -; focus an element and set it as the element or the child of the element to scroll
- * - -# yank an element's anchor URL to clipboard
- * - -w open in new window
- * - -wp open in new private window
- * - -z scroll an element to the top of the viewport
+ * {{tridactyl-arg-list}}
+ *
  * - `-pipe selector key` e.g, `-pipe a href` returns the URL of the chosen link on a page. Only makes sense with `composite`, e.g, `composite hint -pipe .some-class>a textContent | yank`. If you don't select a hint (i.e. press `<Esc>`), will return an empty string. Most useful when used like `-c` to do things other than opening links. NB: the query selector cannot contain any spaces.
  * - `-W excmd...` pass hint href as the final argument to excmd and execute, e.g, `hint -W mpvsafe` to open YouTube videos. NB: passing it to bare [[exclaim]] is dangerous - see `get exaliases.mpvsafe` for an example of how to do it safely. The usual [[composite]] caveats for `;` and `|` in URLs apply. If you need to use a query selector, use `-pipe` instead.
  * - -F [callback] - run a custom callback on the selected hint, e.g. `hint -JF e => {tri.excmds.tabopen("-b",e.href); e.remove()}`.
@@ -5620,6 +5602,39 @@ const KILL_STACK: Element[] = []
  * - `;d` and `;gd` - open links in discarded background tabs (defer loading until tab is switched to)
  *
  * NB: by default, hinting respects whether links say they should be opened in new tabs (i.e. `target=_blank`). If you wish to override this you can use `:hint -JW open` to force the hints to open in the current tab. JavaScript hints (grey ones) will always open wherever they want, but if you want to include these anyway you can use `:hint -W open`.
+ *
+ * @arg -t open in a new foreground tab
+ * @arg -b open in background
+ * @arg -y copy (yank) link's target to clipboard
+ * @arg -p copy an element's text to the clipboard
+ * @arg -h select an element (as if you click-n-dragged over it)
+ * @arg -P copy an element's title/alt text to the clipboard
+ * @arg -r read an element's text with text-to-speech
+ * @arg -i view an image
+ * @arg -I view an image in a new tab
+ * @arg -k irreversibly deletes an element from the page (until reload)
+ * @arg -K hides an element on the page; hidden elements can be restored using elementunhide
+ * @arg -s save (download) the linked resource
+ * @arg -S save the linked image
+ * @arg -a save-as the linked resource
+ * @arg -A save-as the linked image
+ * @arg -; focus an element and set it as the element or the child of the element to scroll
+ * @arg -# yank an element's anchor URL to clipboard
+ * @arg -w open in new window
+ * @arg -wp open in new private window
+ * @arg -z scroll an element to the top of the viewport
+ * @arg -pipe pipe attribute to clipboard
+ * @arg -W run excmd with hint href
+ * @arg -F run JS callback
+ * @arg -c hint CSS selector only
+ * @arg -C hint CSS selector and defaults
+ * @arg -x exclude CSS selector
+ * @arg -f filter hints by text
+ * @arg -fr filter hints by regex
+ * @arg -J disable JS hints
+ * @arg -V include invisible elements
+ * @arg -q rapid (stay in hint mode)
+ * @arg -! execute all hints immediately
  */
 //#content
 export async function hint(...args: string[]): Promise<any> {
