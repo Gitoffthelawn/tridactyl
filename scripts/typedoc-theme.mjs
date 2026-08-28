@@ -254,76 +254,65 @@ class TridactylRouter extends KindRouter {
 
 function parseFlagTag(tag) {
     const text = (tag.content || []).map(part => part.text || "").join("")
-    const m = /^(-\S+)\s+(.+)$/.exec(text.trim())
-    return m ? [m[1], m[2]] : undefined
+    const m = /^(-\S+)[ \t]+([^\n]+)\n*([\s\S]*)$/.exec(text.trim())
+    if (!m) return undefined
+    const [, flag, short, rest] = m
+    const elaboration = rest.trim()
+    return [flag, short, elaboration]
 }
 
-function renderFlagList(anchor, parsed) {
+function renderFlagList(context, parsed) {
     if (parsed.length === 0) return null
     return h(
-        "div",
-        { class: "tsd-tag-flag tsd-comment tsd-typography" },
-        h(
-            "h4",
-            { class: "tsd-anchor-link", id: anchor },
-            "Flags",
+        "ul",
+        { class: "tsd-tag-flag tsd-parameter-list" },
+        parsed.map(([flag, short, elaboration]) =>
             h(
-                "a",
-                { href: `#${anchor}`, "aria-label": "Permalink", class: "tsd-anchor-icon" },
-                h(
-                    "svg",
-                    { viewBox: "0 0 24 24", "aria-hidden": "true" },
-                    h("use", { href: "../assets/icons.svg#icon-anchor" }),
-                ),
+                "li",
+                null,
+                h("code", null, flag),
+                " ",
+                short,
+                elaboration &&
+                    context.displayParts([{ kind: "text", text: elaboration }]),
             ),
-        ),
-        h(
-            "ul",
-            null,
-            parsed.map(([flag, desc]) => h("li", null, h("code", null, flag), " ", desc)),
         ),
     )
 }
-
-const FLAG_MARKER = "{{tridactyl-flag-list}}"
 
 class TridactylTheme extends DefaultTheme {
     getRenderContext(page) {
         const context = super.getRenderContext(page)
         const defaultCommentSummary = context.commentSummary
         context.commentSummary = props => {
-            const owner = props.isParameter?.() ? props.parent : props
-            const flagTags = (owner?.comment?.blockTags || []).filter(
-                tag => tag.tag === "@flag",
-            )
-            const summaryParts = props.comment?.summary || []
-            const markerIndex = summaryParts.findIndex(
-                part => part.kind === "text" && part.text.includes(FLAG_MARKER),
-            )
-            if (flagTags.length === 0 || markerIndex === -1)
+            const blockTags = props.comment?.blockTags || []
+            if (!blockTags.some(tag => tag.tag === "@flag" || tag.tag === "@endflags"))
                 return defaultCommentSummary(props)
 
-            flagTags.forEach(tag => (tag.skipRendering = true))
-            const parsed = flagTags.map(parseFlagTag).filter(Boolean)
-            const anchor = `${String(owner.name || "flags").toLowerCase()}-flags`
-
-            const markerPart = summaryParts[markerIndex]
-            const [beforeText, afterText] = markerPart.text.split(FLAG_MARKER)
-            const before = [
-                ...summaryParts.slice(0, markerIndex),
-                ...(beforeText ? [{ kind: "text", text: beforeText }] : []),
-            ]
-            const after = [
-                ...(afterText ? [{ kind: "text", text: afterText }] : []),
-                ...summaryParts.slice(markerIndex + 1),
-            ]
-            return h(
-                JSX.Fragment,
-                null,
-                before.length > 0 && context.displayParts(before),
-                renderFlagList(anchor, parsed),
-                after.length > 0 && context.displayParts(after),
-            )
+            const summaryHeadingCount = page.pageHeadings.length
+            const nodes = [context.displayParts(props.comment?.summary || [])]
+            page.pageHeadings.length = summaryHeadingCount
+            let flagRun = []
+            const flushFlags = () => {
+                if (flagRun.length === 0) return
+                const parsed = flagRun.map(parseFlagTag).filter(Boolean)
+                nodes.push(renderFlagList(context, parsed))
+                flagRun = []
+            }
+            for (const tag of blockTags) {
+                if (tag.tag === "@flag") {
+                    tag.skipRendering = true
+                    flagRun.push(tag)
+                } else if (tag.tag === "@endflags") {
+                    tag.skipRendering = true
+                    flushFlags()
+                    const headingCount = page.pageHeadings.length
+                    nodes.push(context.displayParts(tag.content || []))
+                    page.pageHeadings.length = headingCount
+                }
+            }
+            flushFlags()
+            return h(JSX.Fragment, null, ...nodes)
         }
         return context
     }
