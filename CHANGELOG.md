@@ -1,6 +1,6 @@
 # Tridactyl changelog
 
-# Release 1.25.0 / Unreleased
+# Release 1.25.0 / 2026-08-28
 
 Codename "Carpenter"
 
