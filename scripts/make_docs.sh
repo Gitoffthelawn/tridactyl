@@ -8,6 +8,16 @@ if revision=$(git rev-parse HEAD 2>/dev/null); then
 else
     set -- --disableSources
 fi
+blockTags=$(node -e '
+import("typedoc").then(async ({ Application }) => {
+    const app = await Application.bootstrap({})
+    const tags = app.options.getValue("blockTags").filter(t => t !== "@inheritDoc")
+    console.log([...tags, "@flag", "@endflags"].join(" "))
+})
+')
+for tag in $blockTags; do
+    set -- "$@" --blockTags "$tag"
+done
 "$(yarn bin)/typedoc" --plugin ./scripts/typedoc-theme.mjs \
     --theme tridactyl --router tridactyl \
     "$@" \
