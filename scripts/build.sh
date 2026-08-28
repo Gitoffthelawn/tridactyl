@@ -62,19 +62,6 @@ if [ "$QUICK_BUILD" != "1" ]; then
     printf 'export * from "./lib/metadata"\n' > src/.metadata.generated.ts
     node -e "var fs=require('fs');fs.writeFileSync('src/.themes.generated.json',JSON.stringify(fs.readdirSync('src/static/themes').sort()))"
 
-    # TypeDoc's own default blockTags, plus our custom @flag/@endflags tags. Same as scripts/make_docs.sh
-    blockTags=$(node -e '
-import("typedoc").then(async ({ Application }) => {
-    const app = await Application.bootstrap({})
-    const tags = app.options.getValue("blockTags").filter(t => t !== "@inheritDoc")
-    console.log([...tags, "@flag", "@endflags"].join(" "))
-})
-')
-    set --
-    for tag in $blockTags; do
-        set -- "$@" --blockTags "$tag"
-    done
-
     # Generate runtime metadata via typedoc. The generated TypeScript shim
     # routes the public @src/.metadata.generated import to the JSON loader.
     "$(yarn bin)/typedoc" --json src/.metadata.generated.json \
@@ -82,7 +69,6 @@ import("typedoc").then(async ({ Application }) => {
       --excludePrivate false --excludePrivateClassFields false \
       --validation.notExported false \
       --exclude 'src/.excmds_*.generated.ts' \
-      "$@" \
       src/excmds.ts src/lib/config.ts src/content/state_content.ts
     node scripts/convert_typedoc_metadata.js src/.metadata.generated.json
 
