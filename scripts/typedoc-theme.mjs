@@ -48,8 +48,7 @@ function rewriteWikiLinks(parts, owner, reflections) {
                     candidate =>
                         !candidate.kindOf(
                             ReflectionKind.Module | ReflectionKind.Namespace,
-                        ) &&
-                        !candidate.sources?.some(isGeneratedSource),
+                        ) && !candidate.sources?.some(isGeneratedSource),
                 ) ||
                 candidates.find(
                     candidate =>
@@ -253,12 +252,31 @@ class TridactylRouter extends KindRouter {
 }
 
 function parseFlagTag(tag) {
-    const text = (tag.content || []).map(part => part.text || "").join("")
+    const parts = tag.content || []
+    let text = ""
+    let trailing = []
+    for (let i = 0; i < parts.length; i++) {
+        const part = parts[i]
+        const match = part.kind === "text" && /\r?\n[ \t]*\r?\n/.exec(part.text)
+        if (!match) {
+            text += part.text || ""
+            continue
+        }
+        text += part.text.slice(0, match.index)
+        trailing = [
+            {
+                ...part,
+                text: part.text.slice(match.index + match[0].length),
+            },
+            ...parts.slice(i + 1),
+        ]
+        break
+    }
     const m = /^(-\S+)[ \t]+([^\n]+)\n*([\s\S]*)$/.exec(text.trim())
     if (!m) return undefined
     const [, flag, short, rest] = m
     const elaboration = rest.trim()
-    return [flag, short, elaboration]
+    return [flag, short, elaboration, trailing]
 }
 
 function renderFlagList(context, parsed) {
@@ -286,7 +304,7 @@ class TridactylTheme extends DefaultTheme {
         const defaultCommentSummary = context.commentSummary
         context.commentSummary = props => {
             const blockTags = props.comment?.blockTags || []
-            if (!blockTags.some(tag => tag.tag === "@flag" || tag.tag === "@endflags"))
+            if (!blockTags.some(tag => tag.tag === "@flag"))
                 return defaultCommentSummary(props)
 
             const summaryHeadingCount = page.pageHeadings.length
@@ -295,19 +313,20 @@ class TridactylTheme extends DefaultTheme {
             let flagRun = []
             const flushFlags = () => {
                 if (flagRun.length === 0) return
-                const parsed = flagRun.map(parseFlagTag).filter(Boolean)
-                nodes.push(renderFlagList(context, parsed))
+                nodes.push(renderFlagList(context, flagRun))
                 flagRun = []
             }
             for (const tag of blockTags) {
                 if (tag.tag === "@flag") {
                     tag.skipRendering = true
-                    flagRun.push(tag)
-                } else if (tag.tag === "@endflags") {
-                    tag.skipRendering = true
+                    const parsed = parseFlagTag(tag)
+                    if (!parsed) continue
+                    const [flag, short, elaboration, trailing] = parsed
+                    flagRun.push([flag, short, elaboration])
+                    if (trailing.length === 0) continue
                     flushFlags()
                     const headingCount = page.pageHeadings.length
-                    nodes.push(context.displayParts(tag.content || []))
+                    nodes.push(context.displayParts(trailing))
                     page.pageHeadings.length = headingCount
                 }
             }
@@ -399,7 +418,10 @@ class TridactylTheme extends DefaultTheme {
                             h(
                                 "ul",
                                 null,
-                                docLink("Commands", "modules/_src_excmds_.html"),
+                                docLink(
+                                    "Commands",
+                                    "modules/_src_excmds_.html",
+                                ),
                                 docLink(
                                     "Settings",
                                     "classes/_src_lib_config_.default_config.html",

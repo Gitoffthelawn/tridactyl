@@ -5565,7 +5565,6 @@ const KILL_STACK: Element[] = []
  * - If you need to use a query selector, use `-pipe` instead.
  * @flag -F [callback] - run a custom callback on the selected hint
  * - e.g. `hint -JF e => {tri.excmds.tabopen("-b",e.href); e.remove()}`.
- * @endflags
  *
  * #### Element selection flags
  *
@@ -5583,7 +5582,6 @@ const KILL_STACK: Element[] = []
  * - Also useful on sites with plenty of useless javascript elements such as google.com
  * @flag -V create hints for invisible elements
  * - By default, elements outside the viewport when calling :hint are not hinted; this includes them anyways.
- * @endflags
  *
  * #### Hinting mode selection:
  *

@@ -6,10 +6,6 @@
         {
             "tagName": "@flag",
             "syntaxKind": "block"
-        },
-        {
-            "tagName": "@endflags",
-            "syntaxKind": "block"
         }
     ]
 }

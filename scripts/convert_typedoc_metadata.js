@@ -39,7 +39,8 @@ function convertMetadata(project) {
             const text = (tag.content || [])
                 .map(part => part.text || "")
                 .join("")
-            const m = /^(-\S+)[ \t]+([^\n]+)\n*([\s\S]*)$/.exec(text.trim())
+            const flagText = text.split(/\r?\n[ \t]*\r?\n/, 1)[0]
+            const m = /^(-\S+)[ \t]+([^\n]+)\n*([\s\S]*)$/.exec(flagText.trim())
             if (!m) continue
             const [, flag, short, rest] = m
             const elaboration = rest.trim()
