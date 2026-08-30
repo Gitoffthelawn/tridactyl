@@ -85,7 +85,7 @@ function mutateInBackground(command, args) {
     return browser.runtime.sendMessage({ type: "config_background", command, args })
 }
 
-/** @hidden
+/** @internal
  * Ideally, LoggingLevel should be in logging.ts and imported from there. However this would cause a circular dependency, which webpack can't deal with
  */
 export type LoggingLevel = "never" | "error" | "warning" | "info" | "debug"

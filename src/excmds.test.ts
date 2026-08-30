@@ -114,6 +114,12 @@ test("`set` preserves deep custom arrays", async () => {
     expect(config.getDynamic("custom", "deep", "array")).toEqual([1, 2])
 })
 
+test("`set` accepts logging levels", async () => {
+    await set("logging.native", "debug")
+
+    expect(config.get("logging", "native")).toBe("debug")
+})
+
 test("`colourscheme --url` only refetches with `--update`", async () => {
     const args = ["--module=reader", "--url=x", "issue5490"]
     const fetchMock = jest
