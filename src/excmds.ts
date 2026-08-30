@@ -827,7 +827,7 @@ export async function nativeinstall() {
     With no arguments supplied the excmd will try to find an appropriate
     config path and write the rc file to there. Any argument given to the
     excmd excluding the `-f` flag will be treated as a path to write the rc
-    file to relative to the native messenger's location (`~/.local/share/tridactyl/`). By default, it silently refuses to overwrite existing files.
+    file to relative to the native messenger's location (`~/.local/share/tridactyl/`). By default, it refuses to overwrite existing files.
 
     The RC file will be split into sections that will be created if a config
     property is discovered within one of them:
@@ -872,7 +872,8 @@ export async function mktridactylrc(...args: string[]) {
         return fillcmdline_tmp(3000, "# RC copied to clipboard")
     }
     if (!(await Native.nativegate("0.1.11", false))) throw new Error("`:mktridactylrc` requires the native messenger. Run `:nativeinstall` or use `:mktridactylrc --clipboard`.")
-    if (!(await rc.writeRc(conf, overwrite, file))) logger.error("Could not write RC file")
+    const path = await rc.writeRc(conf, overwrite, file)
+    await fillcmdline_tmp(3000, `# RC written to ${path}`)
 
     return conf
 }
