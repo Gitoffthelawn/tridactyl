@@ -4012,13 +4012,13 @@ export function version() {
  *  **New feature:** you can add modes as simply as adding binds with `bind --mode=[newmodename]` and then enter the mode with `mode [newmodename]`.
  */
 //#content
-export function mode(mode: ModeName) {
+export function mode(mode: string) {
     // TODO: event emition on mode change.
     if (mode === undefined) throw new Error("Mode must be provided!")
     if (mode === "hint") {
         hint()
     } else {
-        contentState.mode = mode
+        contentState.mode = mode as ModeName
     }
 }
 
