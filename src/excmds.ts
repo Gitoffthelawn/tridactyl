@@ -3338,7 +3338,7 @@ export async function undo(item = "recent"): Promise<number> {
 }
 
 /**
- * Move the current tab to be just in front of the index specified.
+ * Move a tab, defaulting to the current one, to be just in front of the index specified.
  *
  * Known bug: This supports relative movement with `tabmove +pos` and `tabmove -pos`, but autocomplete doesn't know that yet and will override positive and negative indexes.
  *
@@ -3349,10 +3349,12 @@ export async function undo(item = "recent"): Promise<number> {
  * @param index New index for the current tab.
  *
  * 1,start,^ are aliases for the first index. 0,end,$ are aliases for the last index.
+ *
+ * @param tabToMove Which tab to move. Defaults to the current tab.
  */
 //#background
-export async function tabmove(index = "$") {
-    const aTab = await activeTab()
+export async function tabmove(index = "$", tabToMove?: string) {
+    const aTab = await tabFromIndex(tabToMove)
     if (index === "#") {
         const previousTab = await prevActiveTab()
         if (previousTab.index - aTab.index === 1) {
