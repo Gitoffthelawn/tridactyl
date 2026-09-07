@@ -389,7 +389,7 @@ export async function queryAndURLwrangler(
     const searchurls = config.get("searchurls")
     const template = expandRecursively(firstWord, searchurls)
     if (template != firstWord) {
-        const url = UrlUtil.interpolateSearchItem(new URL(template), rest)
+        const url = UrlUtil.interpolateSearchItem(template, rest)
         // firstWord is a searchurl, so let's use that
         return url.href
     }
@@ -445,7 +445,7 @@ export async function queryAndURLwrangler(
     if (enginename) {
         if (searchurls[enginename]) {
             const url = UrlUtil.interpolateSearchItem(
-                new URL(searchurls[enginename]),
+                searchurls[enginename],
                 queryString,
             )
             return url.href
