@@ -11,6 +11,7 @@
     - `:mode [custom]` now works again (#5518)
     - `:mkt` is now noisier about paths and failure
     - `:set logging.` works again (#5513)
+    - `searchurls` can now have `%s` in their subdomains (#5523)
 
 - Miscellaneous
 
@@ -21,7 +22,7 @@ Thanks to all of our contributors for this release: Oliver Blanthorn, Robert Hil
 
 Extra special thanks go to Marc González Moratona and Robert Hill who both contributed for the first time.
 
-Last, but not least - thank you to everyone who reported the issues we closed in this release: bovine3dom, pennae, stevium and veivataan.
+Last, but not least - thank you to everyone who reported the issues we closed in this release: bovine3dom, pennae, stevium, syntaxenjoyer and veivataan.
 
 # Release 1.25.0 / 2026-08-28
 
